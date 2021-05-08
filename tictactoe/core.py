@@ -1,4 +1,6 @@
+from collections import defaultdict, Counter
 import math
+from typing import List
 
 
 WINNING_LOCATIONS = [
@@ -24,7 +26,7 @@ def turn(bx, bo):
     return "X" if not len([*bx, *bo]) % 2 else "O"
 
 
-def parse(s: str):
+def parse_textboard(s: str):
     bx = set()
     bo = set()
     for i, v in enumerate([l for l in s if l in ["X", "O", "_"]]):
@@ -36,6 +38,8 @@ def parse(s: str):
 
 
 def next_boards(bx, bo):
+    if is_over(bx, bo):
+        return []
     slots = free_slots(bx, bo)
     if turn(bx, bo) == "X":
         return [(set().union([*bx, slot]), bo) for slot in slots]
@@ -48,7 +52,7 @@ def get_winner(bx, bo):
     # returns None on tie
     for stoplist in WINNING_LOCATIONS:
         for k, v in {"X": bx, "O": bo}.items():
-            if len(v & set(stoplist)) == 3:
+            if len(set(v) & set(stoplist)) == 3:
                 return k
 
 
@@ -83,26 +87,68 @@ def minimax(bx, bo):
 
 
 def lookahead(bx, bo):
-    # new set is only one element larger
     predictions = []
     for cx, co in next_boards(bx, bo):
         if turn(bx, bo) == "X":
             diff = cx - bx
         if turn(bx, bo) == "O":
             diff = co - bo
+        # new set is only one element larger
         predictions.append((list(diff)[0], minimax(cx, co)))
     return (turn(bx, bo), predictions)
+
+
+def parse_key(key):
+    bx = [int(slot) for slot in key[1 : key.index("-")]]
+    bo = [int(slot) for slot in key[key.index("O") + 1 :]]
+    return bx, bo
+
+
+def is_ancestor(a, b):
+    # if game over is not checked, ancestors would be
+    # registered for games that had already ended
+    if is_over(*parse_key(a)):
+        return False
+    i = 0
+    j = 0
+    while i < len(a) and j < len(b):
+        if a[i] == b[j]:
+            i += 1
+            j += 1
+        else:
+            j += 1
+    return i == len(a)
+
+
+def analyze_tree(tree):
+    r = defaultdict(list)
+    leaves = [
+        (key, board_value(*parse_key(key)))
+        for key in tree.keys()
+        if is_over(*parse_key(key))
+    ]
+    for key in tree:
+        for leaf_key, leaf_value in leaves:
+            if is_ancestor(key, leaf_key):
+                n = r[key].append(leaf_value)
+    for key, v in tree.items():
+        player, choices = v
+        tree[key] = [player, Counter(r[key]), dict(choices)]
+    return tree
+
+
+def create_key(bx, bo):
+    def s(board):
+        return "".join(map(str, sorted(board)))
+
+    return f"X{s(bx)}-O{s(bo)}"
 
 
 def grow_tree(bx=set(), bo=set()):
     game_tree = {}
 
-    def s(board):
-        return "".join(map(str, sorted(board)))
-
     def f(bx, bo):
-        key = f"X{s(bx)}-O{s(bo)}"
-        if key not in game_tree:
+        if (key := create_key(bx, bo)) not in game_tree:
             game_tree[key] = lookahead(bx, bo)
         if is_over(bx, bo):
             return
@@ -110,4 +156,5 @@ def grow_tree(bx=set(), bo=set()):
             f(cx, co)
 
     f(bx, bo)
+
     return game_tree
