@@ -2,9 +2,9 @@ import sys
 
 from setuptools import setup, find_packages
 
-requires = []
+requires = ["attrs"]
 
-dev_requires = ["bump2version", "pytest", "attrs"]
+dev_requires = ["bump2version", "pytest"]
 
 setup(
     name="tic-tac-toe",
