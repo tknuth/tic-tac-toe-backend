@@ -144,7 +144,11 @@ def create_key(bx, bo):
     return f"X{s(bx)}-O{s(bo)}"
 
 
-def grow_tree(bx=set(), bo=set()):
+def grow_tree(bx=None, bo=None):
+    if bx is None:
+        bx = set()
+    if bo is None:
+        bo = set()
     game_tree = {}
 
     def f(bx, bo):
