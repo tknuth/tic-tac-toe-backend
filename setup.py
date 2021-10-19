@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 requires = ["attrs"]
 
-dev_requires = ["bump2version", "pytest"]
+dev_requires = ["bump2version", "pytest", "pytest-sugar"]
 
 setup(
     name="tic-tac-toe",
