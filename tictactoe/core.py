@@ -23,7 +23,7 @@ def free_slots(*args):
 
 
 def turn(bx, bo):
-    return "X" if not len([*bx, *bo]) % 2 else "O"
+    return "O" if len([*bx, *bo]) % 2 else "X"
 
 
 def parse_textboard(s: str):
