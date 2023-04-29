@@ -9,6 +9,7 @@ import json
 
 def test_free_slots():
     assert free_slots(range(7)) == [7, 8]
+    assert free_slots(range(9)) == []
 
 
 def test_is_ancestor():
