@@ -17,8 +17,8 @@ WINNING_LOCATIONS = [
 
 def free_slots(*args):
     board = set().union(*args)
-    if len(board) > 8:
-        return []
+    # if len(board) > 8:
+    #     return []
     return [i for i in range(9) if i not in board]
 
 
