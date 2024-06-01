@@ -63,6 +63,31 @@ def test_minimax():
     assert minimax(bx, bo) == -1
 
 
+def test_create_textboard():
+    bx = {0, 3}
+    bo = {2, 4}
+    b = create_textboard(bx, bo)
+    assert b == "\n".join(
+        [
+            " X | 1 | O ",
+            "---+---+---",
+            " X | O | 5 ",
+            "---+---+---",
+            " 6 | 7 | 8 ",
+        ]
+    )
+    b = create_textboard(bx, bo, placeholder=" ")
+    assert b == "\n".join(
+        [
+            " X |   | O ",
+            "---+---+---",
+            " X | O |   ",
+            "---+---+---",
+            "   |   |   ",
+        ]
+    )
+
+
 def test_board_value():
     s = """
     X X X
@@ -141,11 +166,21 @@ def test_is_over():
     assert is_over(bx, bo) == True
 
 
-def test_parse():
+def test_parse_textboard():
     s = """
     X X X
     X O O
     O O X
+    """
+    bx, bo = parse_textboard(s)
+    assert bx == set([0, 1, 2, 3, 8])
+    assert bo == set([4, 5, 6, 7])
+    s = """
+     X | X | X
+    ---+---+---
+     X | O | O
+    ---+---+---
+     O | O | X
     """
     bx, bo = parse_textboard(s)
     assert bx == set([0, 1, 2, 3, 8])

@@ -1,7 +1,7 @@
-from collections import defaultdict, Counter
 import math
+import random
+from collections import Counter, defaultdict
 from typing import List
-
 
 WINNING_LOCATIONS = [
     [0, 1, 2],
@@ -24,17 +24,6 @@ def free_slots(*args):
 
 def turn(bx, bo):
     return "O" if len([*bx, *bo]) % 2 else "X"
-
-
-def parse_textboard(s: str):
-    bx = set()
-    bo = set()
-    for i, v in enumerate([l for l in s if l in ["X", "O", "_"]]):
-        if v == "X":
-            bx.add(i)
-        if v == "O":
-            bo.add(i)
-    return bx, bo
 
 
 def next_boards(bx, bo):
@@ -162,3 +151,57 @@ def grow_tree(bx=None, bo=None):
     f(bx, bo)
 
     return game_tree
+
+
+def parse_textboard(s, placeholder="_"):
+    bx = set()
+    bo = set()
+    s.replace("   ", f" {placeholder} ")
+    for i, v in enumerate([l for l in s if l in ["X", "O", placeholder]]):
+        if v == "X":
+            bx.add(i)
+        if v == "O":
+            bo.add(i)
+    return bx, bo
+
+
+def fill_symbol(textboard, indices, symbol):
+    for i in indices:
+        textboard = textboard.replace(str(i), symbol)
+    return textboard
+
+
+def create_textboard(bx, bo, placeholder=None):
+    b = "\n".join(
+        [
+            " 0 | 1 | 2 ",
+            "---+---+---",
+            " 3 | 4 | 5 ",
+            "---+---+---",
+            " 6 | 7 | 8 ",
+        ]
+    )
+    b = fill_symbol(b, bx, "X")
+    b = fill_symbol(b, bo, "O")
+    if placeholder is not None:
+        b = fill_symbol(b, range(9), placeholder)
+    return b
+
+
+def print_textboard(bx, bo, placeholder=None):
+    print(create_textboard(bx, bo, placeholder))
+
+
+def add_move(bx, bo, i):
+    if i not in free_slots(bx, bo):
+        return bx, bo
+    if turn(bx, bo) == "X":
+        return {*bx, i}, bo
+    return bx, {*bo, i}
+
+
+def choose_move(bx, bo):
+    r = lookahead(bx, bo)[1]
+    best_result = [min, max][turn(bx, bo) == "X"](list(zip(*r))[1])
+    best_moves = [m[0] for m in r if m[1] == best_result]
+    return random.choice(best_moves)
